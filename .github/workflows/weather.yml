@@ -1,15 +1,13 @@
-name: Discord Weather Webhook 24/7
+name: weather
 
 on:
   schedule:
-    # 00:00 UTC = 07:00 sĂ¡ng giá» Viá»‡t Nam (Gá»­i báº£n tin sĂ¡ng)
     - cron: "0 0 * * *"
-    # PhĂºt thá»© 17 má»—i giá»: quĂ©t kiá»ƒm tra biáº¿n Ä‘á»™ng thá»i tiáº¿t báº¥t thÆ°á»ng
     - cron: "17 * * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "Chá»n cháº¿ Ä‘á»™ (morning hoáº·c check)"
+        description: "Select mode"
         required: true
         default: "check"
         type: choice
@@ -20,39 +18,42 @@ on:
 permissions:
   contents: write
 
-concurrency: weather_webhook
+concurrency:
+  group: weather_webhook
 
 jobs:
   run-weather:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout mĂ£ nguá»“n
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: CĂ i Ä‘áº·t Python 3.12
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: CĂ i Ä‘áº·t thÆ° viá»‡n requests
+      - name: Install dependencies
         run: pip install requests
 
-      - name: XĂ¡c Ä‘á»‹nh cháº¿ Ä‘á»™ cháº¡y
+      - name: Determine mode
         run: |
-          if [ "${{ github.event.schedule }}" = "0 0 * * *" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "0 0 * * *" ]; then
             echo "MODE=morning" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "MODE=${{ inputs.mode }}" >> $GITHUB_ENV
           else
-            echo "MODE=${{ github.event.inputs.mode || 'check' }}" >> $GITHUB_ENV
+            echo "MODE=check" >> $GITHUB_ENV
           fi
 
-      - name: Cháº¡y script cáº­p nháº­t thá»i tiáº¿t
+      - name: Run weather script
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python weather.py $MODE
 
-      - name: LÆ°u tráº¡ng thĂ¡i state.json
+      - name: Save state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add state.json
-          git diff --staged --quiet || (git commit -m "chore: Cáº­p nháº­t state thá»i tiáº¿t tá»± Ä‘á»™ng" && git push)
+          git diff --staged --quiet || (git commit -m "chore: auto update weather state" && git push)
