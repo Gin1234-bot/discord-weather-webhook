@@ -40,19 +40,19 @@
     "rain:Nam Định": "none",
     "heat:Nam Định": 0,
     "wind:Nam Định": 2,
-    "rain:Ninh Bình": 4,
+    "rain:Ninh Bình": "none",
     "heat:Ninh Bình": 0,
     "wind:Ninh Bình": 3,
     "rain:Lạng Sơn": "none",
     "heat:Lạng Sơn": 0,
     "wind:Lạng Sơn": 3,
-    "rain:Thanh Hóa": 23,
+    "rain:Thanh Hóa": 1,
     "heat:Thanh Hóa": 0,
     "wind:Thanh Hóa": 3,
     "rain:Nghệ An (Vinh)": 2,
     "heat:Nghệ An (Vinh)": 0,
     "wind:Nghệ An (Vinh)": 3,
-    "rain:Hà Tĩnh": 5,
+    "rain:Hà Tĩnh": 2,
     "heat:Hà Tĩnh": 0,
     "wind:Hà Tĩnh": 3,
     "rain:Quảng Bình": 23,
@@ -61,7 +61,7 @@
     "rain:Thừa Thiên Huế": "none",
     "heat:Thừa Thiên Huế": 0,
     "wind:Thừa Thiên Huế": 2,
-    "rain:Đà Nẵng": 9,
+    "rain:Đà Nẵng": 10,
     "heat:Đà Nẵng": 0,
     "wind:Đà Nẵng": 3,
     "rain:Quảng Nam": "none",
@@ -70,10 +70,10 @@
     "rain:Quảng Ngãi": "none",
     "heat:Quảng Ngãi": 0,
     "wind:Quảng Ngãi": 2,
-    "rain:Bình Định (Quy Nhơn)": 0,
+    "rain:Bình Định (Quy Nhơn)": 8,
     "heat:Bình Định (Quy Nhơn)": 0,
     "wind:Bình Định (Quy Nhơn)": 3,
-    "rain:Khánh Hòa (Nha Trang)": 10,
+    "rain:Khánh Hòa (Nha Trang)": "none",
     "heat:Khánh Hòa (Nha Trang)": 0,
     "wind:Khánh Hòa (Nha Trang)": 2,
     "rain:Lâm Đồng (Đà Lạt)": "none",
@@ -134,5 +134,7 @@
     "heat:An Giang (Long Xuyên)": 0,
     "wind:An Giang (Long Xuyên)": 3
   },
-  "storms": {}
+  "storms": {
+    "CHAMPI-26": 8
+  }
 }
