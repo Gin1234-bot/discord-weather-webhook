@@ -3,7 +3,7 @@ name: weather
 on:
   schedule:
     - cron: "0 0 * * *"
-    - cron: "17 * * * *"
+    - cron: "15,45 * * * *"
   workflow_dispatch:
     inputs:
       mode:
