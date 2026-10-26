@@ -17,6 +17,8 @@ if sys.platform == "win32":
 # Múi giờ Việt Nam: UTC+7
 TZ = timezone(timedelta(hours=7))
 
+WEEKDAYS = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
+
 # Tải Webhook URL từ biến môi trường hoặc file .env
 WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 if not WEBHOOK and os.path.exists(".env"):
@@ -246,9 +248,13 @@ def main(mode="morning"):
 
     v = state["v"]
 
+    thu = WEEKDAYS[now.weekday()]
+    date_str = now.strftime("%d/%m/%Y")
+    time_str = now.strftime("%H:%M")
+    ts = int(now.timestamp())
+
     if mode in ("morning", "test"):
         embeds = []
-        is_first = True
 
         for region, sdict in analyzed.items():
             section_blocks = []
@@ -271,9 +277,6 @@ def main(mode="morning"):
                 section_blocks.append("\n".join(lines))
 
             desc_content = "\n\n".join(section_blocks)
-            if is_first:
-                desc_content = f"🌅 **BẢN TIN DỰ BÁO THỜI TIẾT 34 TỈNH THÀNH • {now.strftime('%d/%m/%Y')}**\n──────────────────────────────────────\n\n" + desc_content
-                is_first = False
 
             embed = {
                 "title": f"{region}",
@@ -295,7 +298,13 @@ def main(mode="morning"):
         embeds[-1]["footer"] = FOOTER
         embeds[-1]["timestamp"] = now.isoformat()
 
-        content = "🌅 **Dự báo thời tiết 34 tỉnh thành (Mẫu 3 - Gom nhóm tiểu vùng):**" if mode == "test" else "@everyone 🌅 Chúc cả nhà ngày mới an lành!"
+        ping_prefix = "@everyone " if mode == "morning" else ""
+        content = (
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"{ping_prefix}🌅 **BẢN TIN DỰ BÁO THỜI TIẾT • {thu.upper()}, {date_str}**\n"
+            f"⏰ *Phát sóng lúc: {time_str} (Giờ Việt Nam)* • <t:{ts}:R>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
         post(content, embeds)
 
     elif mode == "check":
@@ -340,7 +349,13 @@ def main(mode="morning"):
                 "footer": FOOTER,
                 "timestamp": now.isoformat()
             }
-            post(f"{ping}⚠️ Cập nhật biến động lúc {now.strftime('%H:%M')}:", [embed])
+            content = (
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"{ping}⚠️ **CẢNH BÁO BIẾN ĐỘNG THỜI TIẾT • {thu.upper()}, {date_str}**\n"
+                f"⏰ *Ghi nhận lúc: {time_str} (Giờ Việt Nam)* • <t:{ts}:R>\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            )
+            post(content, [embed])
         else:
             print("[*] 34 tỉnh đều ổn định, không có biến động bất thường.")
 
