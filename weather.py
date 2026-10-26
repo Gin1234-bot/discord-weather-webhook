@@ -350,14 +350,30 @@ def main(mode="morning"):
             for subregion, pdict in sdict.items():
                 for pname, a in pdict.items():
                     tag = f"**{pname}**"
+
+                    # 1. Cảnh báo MƯA & DÔNG SÉT
                     if a["rain"] and v.get(f"rain:{pname}", "none") == "none":
-                        alerts.append(f"🌧️ 📍 {tag}: Dự báo xuất hiện mưa từ khoảng **{a['rain'][0]}h – {a['rain'][1]}h**.")
+                        if a["code"] >= 95:
+                            alerts.append(f"⛈️ 📍 {tag}: Dự báo có **dông sét nguy hiểm** ({a['rain'][0]}h–{a['rain'][1]}h). ⚠️ *Nên hạn chế ra đường hoặc tìm chỗ trú an toàn.*")
+                            severe = True
+                        else:
+                            alerts.append(f"🌧️ 📍 {tag}: Dự báo xuất hiện mưa từ **{a['rain'][0]}h – {a['rain'][1]}h**. 🛵 *Nhớ mang theo áo mưa/ô trước khi ra đường!*")
+
+                    # 2. Cảnh báo NẮNG GẮT GIA TĂNG
                     if a["heat"] > v.get(f"heat:{pname}", 0):
-                        alerts.append(f"🔥 📍 {tag}: Nắng gắt gia tăng, đạt **{HEAT[a['heat']]}** (Đỉnh điểm **{a['tmax']:.0f}°C**).")
-                        severe |= a["heat"] >= 2
+                        if a["heat"] >= 2:
+                            alerts.append(f"🔥 📍 {tag}: Nắng gắt gia tăng, đạt **{HEAT[a['heat']]}** (Đỉnh điểm **{a['tmax']:.0f}°C**). ☀️ *Chỉ số UV cực cao, hạn chế ra ngoài giữa trưa.*")
+                            severe = True
+                        else:
+                            alerts.append(f"🌤️ 📍 {tag}: Nhiệt độ tăng lên **{a['tmax']:.0f}°C** (Nắng nóng). Ra đường chú ý che chắn và uống đủ nước.")
+
+                    # 3. Cảnh báo GIÓ MẠNH BẤT THƯỜNG
                     if a["cap"] >= 6 and a["cap"] > v.get(f"wind:{pname}", 0):
-                        alerts.append(f"💨 📍 {tag}: Gió mạnh bất thường đạt **Cấp {a['cap']}** ({a['wind']:.0f} km/h).")
-                        severe |= a["cap"] >= 8
+                        if a["cap"] >= 8:
+                            alerts.append(f"🌪️ 📍 {tag}: Gió giật dữ dội **Cấp {a['cap']}** ({a['wind']:.0f} km/h)! ⚠️ *Nguy hiểm: Chú ý cây cối gãy đổ, tôn bay khi lưu thông.*")
+                            severe = True
+                        else:
+                            alerts.append(f"💨 📍 {tag}: Gió mạnh bất thường đạt **Cấp {a['cap']}** ({a['wind']:.0f} km/h). Lưu thông trên đường cần vững tay lái.")
                     
                     v[f"rain:{pname}"] = a["rain"][0] if a["rain"] else "none"
                     v[f"heat:{pname}"] = a["heat"]
@@ -368,7 +384,7 @@ def main(mode="morning"):
                 cap = beaufort(kmh)
                 prev = state["storms"].get(name)
                 if prev is None or cap > prev:
-                    alerts.append(f"🌀 Bão **{name}** có chuyển biến mới! {stext} (Gió cấp ~{cap}).")
+                    alerts.append(f"🌀 Bão **{name}** có chuyển biến mới tại Biển Đông! {stext} (Gió cấp ~{cap}). ⚠️ *Cảnh báo thiên tai khẩn cấp!*")
                     severe = True
                 state["storms"][name] = cap
         except Exception as e:
@@ -377,8 +393,15 @@ def main(mode="morning"):
         if alerts:
             quiet = now.hour < 6 or now.hour >= 23
             ping = "@everyone " if severe and not quiet else ""
+
+            # Tiêu đề linh hoạt: Gửi riêng 1 tỉnh hay gộp nhiều tỉnh
+            if len(alerts) == 1:
+                embed_title = "⚠️ CẢNH BÁO THỜI TIẾT ĐỘT XUẤT"
+            else:
+                embed_title = f"⚠️ CẢNH BÁO BIẾN ĐỘNG THỜI TIẾT ({len(alerts)} TỈNH THÀNH)"
+
             embed = {
-                "title": "⚠️ CẢNH BÁO BIẾN ĐỘNG THỜI TIẾT TẠI CÁC TỈNH",
+                "title": embed_title,
                 "description": "\n\n".join(alerts[:15]),
                 "color": 0xE74C3C if severe else 0x3498DB,
                 "footer": FOOTER,
@@ -386,7 +409,7 @@ def main(mode="morning"):
             }
             content = (
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"{ping}⚠️ **CẢNH BÁO BIẾN ĐỘNG THỜI TIẾT • {thu.upper()}, {date_str}**\n"
+                f"{ping}⚠️ **CẢNH BÁO THỜI TIẾT RA ĐƯỜNG • {thu.upper()}, {date_str}**\n"
                 f"⏰ *Ghi nhận lúc: {time_str} (Giờ Việt Nam)* • <t:{ts}:R>\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             )
