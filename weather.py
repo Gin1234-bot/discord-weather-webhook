@@ -34,7 +34,7 @@ if not WEBHOOK:
 
 STATE_FILE = "state.json"
 
-# Cấu trúc 34 tỉnh thành gom nhóm theo Tiểu Vùng (MẪU 3)
+# Cấu trúc 36 tỉnh thành đồng bộ kích thước cân đối giữa 3 miền (Mỗi miền đúng 12 tỉnh, 2 tiểu vùng x 6 tỉnh)
 PROVINCES_CONFIG = {
     "🏔️ KHU VỰC MIỀN BẮC": {
         "color": 0x3498DB,  # Xanh lam
@@ -42,13 +42,13 @@ PROVINCES_CONFIG = {
             "🏛️ ĐỒNG BẰNG SÔNG HỒNG & DUYÊN HẢI": [
                 ("Hà Nội", 21.03, 105.85),
                 ("Hải Phòng", 20.86, 106.68),
-                ("Quảng Ninh (Hạ Long)", 20.95, 107.08),
+                ("Quảng Ninh", 20.95, 107.08),
                 ("Nam Định", 20.43, 106.17),
                 ("Ninh Bình", 20.25, 105.97),
-                ("Phú Thọ (Việt Trì)", 21.32, 105.40),
+                ("Phú Thọ", 21.32, 105.40),
             ],
             "🏔️ VÙNG NÚI TÂY BẮC & ĐÔNG BẮC": [
-                ("Lào Cai (Sa Pa)", 22.48, 103.97),
+                ("Sa Pa (Lào Cai)", 22.48, 103.97),
                 ("Điện Biên", 21.38, 103.02),
                 ("Sơn La", 21.33, 103.91),
                 ("Thái Nguyên", 21.59, 105.84),
@@ -60,23 +60,21 @@ PROVINCES_CONFIG = {
     "🏖️ KHU VỰC MIỀN TRUNG & TÂY NGUYÊN": {
         "color": 0xE67E22,  # Vàng cam
         "subregions": {
-            "🌊 BẮC TRUNG BỘ": [
+            "🌊 BẮC TRUNG BỘ & DUYÊN HẢI": [
                 ("Thanh Hóa", 19.81, 105.78),
-                ("Nghệ An (Vinh)", 18.67, 105.68),
+                ("Nghệ An", 18.67, 105.68),
                 ("Hà Tĩnh", 18.34, 105.90),
-                ("Quảng Bình (Đồng Hới)", 17.47, 106.60),
-            ],
-            "🏖️ DUYÊN HẢI NAM TRUNG BỘ": [
-                ("Thừa Thiên Huế", 16.46, 107.59),
+                ("Quảng Bình", 17.47, 106.60),
+                ("Huế", 16.46, 107.59),
                 ("Đà Nẵng", 16.05, 108.20),
-                ("Quảng Nam (Hội An)", 15.57, 108.48),
-                ("Quảng Ngãi", 15.12, 108.80),
-                ("Bình Định (Quy Nhơn)", 13.78, 109.22),
-                ("Khánh Hòa (Nha Trang)", 12.24, 109.19),
             ],
-            "🌲 CAO NGUYÊN TÂY NGUYÊN": [
-                ("Lâm Đồng (Đà Lạt)", 11.94, 108.44),
-                ("Đắk Lắk (Buôn Ma Thuột)", 12.67, 108.04),
+            "🌲 NAM TRUNG BỘ & TÂY NGUYÊN": [
+                ("Quảng Nam", 15.57, 108.48),
+                ("Quảng Ngãi", 15.12, 108.80),
+                ("Quy Nhơn (Bình Định)", 13.78, 109.22),
+                ("Nha Trang (Khánh Hòa)", 12.24, 109.19),
+                ("Đà Lạt (Lâm Đồng)", 11.94, 108.44),
+                ("Buôn Ma Thuột (Đắk Lắk)", 12.67, 108.04),
             ]
         }
     },
@@ -85,17 +83,19 @@ PROVINCES_CONFIG = {
         "subregions": {
             "🏙️ ĐÔNG NAM BỘ": [
                 ("TP. Hồ Chí Minh", 10.82, 106.63),
-                ("Bình Dương (Thủ Dầu Một)", 10.98, 106.65),
-                ("Đồng Nai (Biên Hòa)", 10.95, 106.82),
-                ("Bà Rịa - Vũng Tàu", 10.35, 107.08),
+                ("Bình Dương", 10.98, 106.65),
+                ("Đồng Nai", 10.95, 106.82),
+                ("Vũng Tàu", 10.35, 107.08),
                 ("Tây Ninh", 11.31, 106.10),
+                ("Bình Phước", 11.53, 106.88),
             ],
             "🌾 ĐỒNG BẰNG SÔNG CỬU LONG": [
-                ("Long An (Tân An)", 10.53, 106.41),
-                ("Tiền Giang (Mỹ Tho)", 10.36, 106.36),
                 ("Cần Thơ", 10.03, 105.78),
-                ("An Giang (Long Xuyên)", 10.38, 105.43),
-                ("Kiên Giang (Rạch Giá)", 10.01, 105.08),
+                ("Long An", 10.53, 106.41),
+                ("Tiền Giang", 10.36, 106.36),
+                ("An Giang", 10.38, 105.43),
+                ("Kiên Giang", 10.01, 105.08),
+                ("Cà Mau", 9.18, 105.15),
             ]
         }
     }
@@ -186,18 +186,52 @@ def storms():
         r = requests.get("https://www.gdacs.org/xml/rss.xml", timeout=25)
         r.raise_for_status()
         root = ET.fromstring(r.content)
-        keywords = ["viet", "south china sea", "philippines", "east sea", "gulf of tonkin", "bien dong"]
+        now_utc = datetime.now(timezone.utc)
+        
+        # Chỉ theo dõi bão tại Việt Nam, Vịnh Bắc Bộ và vùng Biển Đông
+        keywords = ["vietnam", "viet nam", "bien dong", "south china sea", "gulf of tonkin", "vịnh bắc bộ"]
+        
         for it in root.iter("item"):
             if it.findtext(ns + "eventtype") != "TC":
                 continue
-            text = (it.findtext("title") or "") + " " + (it.findtext("description") or "")
-            if not any(k in text.lower() for k in keywords):
+            
+            country = it.findtext(ns + "country") or ""
+            title = it.findtext("title") or ""
+            desc = it.findtext("description") or ""
+            combined = f"{country} {title} {desc}".lower()
+            
+            # Tọa độ tâm bão nếu có trong feed
+            point_str = it.findtext("{http://www.georss.org/georss}point") or ""
+            in_vn_sea = False
+            if point_str:
+                try:
+                    lat, lon = [float(x) for x in point_str.strip().split()]
+                    # Phạm vi Biển Đông và lân cận Việt Nam (5 - 24°N, 102 - 120°E)
+                    if 5.0 <= lat <= 24.0 and 102.0 <= lon <= 120.0:
+                        in_vn_sea = True
+                except Exception:
+                    pass
+
+            affects_vn = any(k in combined for k in keywords) or in_vn_sea
+            if not affects_vn:
                 continue
-            m = re.search(r"tropical cyclone ([^.]+)\.", text, re.IGNORECASE)
+
+            # Kiểm tra bão còn đang hoạt động không (bỏ qua nếu todate đã kết thúc quá 24h)
+            todate_str = it.findtext(ns + "todate")
+            if todate_str:
+                try:
+                    t_end = datetime.strptime(todate_str.replace(" GMT", ""), "%a, %d %b %Y %H:%M:%S").replace(tzinfo=timezone.utc)
+                    if (now_utc - t_end).total_seconds() > 24 * 3600:
+                        continue
+                except Exception:
+                    pass
+
+            eventname = it.findtext(ns + "eventname") or "Chưa rõ tên"
             sev = it.find(ns + "severity")
             stext = sev.text if sev is not None and sev.text else ""
             km = re.search(r"(\d+)\s*km/h", stext)
-            out.append((m.group(1).strip() if m else "Chưa rõ tên", stext, int(km.group(1)) if km else 0))
+            wind_kmh = int(km.group(1)) if km else 0
+            out.append((eventname, stext, wind_kmh))
     except Exception as e:
         print(f"[!] Lỗi bão GDACS: {e}")
     return out
@@ -226,7 +260,7 @@ def post(content, embeds):
 
 def main(mode="morning"):
     now = datetime.now(TZ)
-    print(f"[*] Bắt đầu phiên chạy: [{mode}] lúc {now.strftime('%d/%m/%Y %H:%M:%S')} (Quét 34 tỉnh theo MẪU 3)...")
+    print(f"[*] Bắt đầu phiên chạy: [{mode}] lúc {now.strftime('%d/%m/%Y %H:%M:%S')} (Quét 36 tỉnh đồng bộ 3 miền)...")
 
     state = load_state()
     today = now.strftime("%Y-%m-%d")
@@ -266,7 +300,8 @@ def main(mode="morning"):
                     heat_text = f" • 🔥 **{HEAT[a['heat']]}**" if a["heat"] else ""
                     wind_text = f" • 💨 Cấp {a['cap']}" if a["cap"] >= 4 else ""
                     
-                    row = f"• **{pname}:** {mo_ta(a['code'], a['tmax'])}{heat_text} • 🌡️ `{a['tmin']:.0f}–{a['tmax']:.0f}°C` • {rain_text}{wind_text}"
+                    # Bỏ icon thanh nhiệt độ đỏ, chỉ để nhiệt độ gọn gàng
+                    row = f"• **{pname}:** {mo_ta(a['code'], a['tmax'])}{heat_text} • `{a['tmin']:.0f}–{a['tmax']:.0f}°C` • {rain_text}{wind_text}"
                     lines.append(row)
                     
                     # Lưu state
@@ -285,12 +320,12 @@ def main(mode="morning"):
             }
             embeds.append(embed)
 
-        # Cảnh báo bão nếu có
+        # Cảnh báo bão thực tế nếu có (chỉ hiện khi có bão thật sự đe dọa Việt Nam/Biển Đông)
         storm_list = storms()
         if storm_list:
             s_lines = [f"⚠️ **Bão {name}**: {stext} (Gió giật cấp ~{beaufort(kmh)})" for name, stext, kmh in storm_list]
             embeds.append({
-                "title": "🌀 CẢNH BÁO BÃO KHẨN CẤP (GDACS)",
+                "title": "🌀 CẢNH BÁO BÃO KHẨN CẤP (BIỂN ĐÔNG / VIỆT NAM)",
                 "description": "\n\n".join(s_lines),
                 "color": 0xE74C3C, # Đỏ cảnh báo
             })
@@ -357,7 +392,7 @@ def main(mode="morning"):
             )
             post(content, [embed])
         else:
-            print("[*] 34 tỉnh đều ổn định, không có biến động bất thường.")
+            print("[*] Các tỉnh đều ổn định, không có biến động bất thường.")
 
     save_state(state)
     print("[+] Hoàn tất phiên chạy.")
