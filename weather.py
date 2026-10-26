@@ -296,7 +296,7 @@ def main(mode="morning"):
             for subregion, pdict in sdict.items():
                 lines = [f"**{subregion}**"]
                 for pname, a in pdict.items():
-                    rain_text = f"🌧️ Mưa {a['rain'][0]}h–{a['rain'][1]}h" if a["rain"] else "☂️ Tạnh ráo"
+                    rain_text = f"🌧️ Mưa {a['rain'][0]}h–{a['rain'][1]}h" if a["rain"] else "☀️ Khô ráo"
                     heat_text = f" • 🔥 **{HEAT[a['heat']]}**" if a["heat"] else ""
                     wind_text = f" • 💨 Cấp {a['cap']}" if a["cap"] >= 4 else ""
                     
