@@ -38,7 +38,7 @@ jobs:
 
       - name: Determine mode
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "0 0 * * *" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "02 0 * * *" ]; then
             echo "MODE=morning" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "MODE=${{ inputs.mode }}" >> $GITHUB_ENV
