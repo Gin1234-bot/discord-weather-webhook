@@ -269,6 +269,13 @@ def main(mode="morning"):
         state["v"] = {}
     state.setdefault("storms", {})
 
+    # Tự động dự phòng: Nếu trong khung 06:50 - 08:30 mà hôm nay chưa phát bản tin sáng -> tự chuyển sang mode morning
+    morning_sent = state.get("morning_sent") == today
+    is_morning_window = (now.hour == 6 and now.minute >= 50) or (now.hour == 7) or (now.hour == 8 and now.minute <= 30)
+    if mode == "check" and not morning_sent and is_morning_window:
+        print(f"[*] [DỰ PHÒNG TỰ ĐỘNG] Hôm nay ({today}) chưa phát bản tin sáng trong khung 06:50 - 08:30 -> Tự động chuyển mode = morning!")
+        mode = "morning"
+
     print("[*] Đang lấy dữ liệu từ Open-Meteo...")
     raw_data = fetch_all_provinces()
 
@@ -341,6 +348,8 @@ def main(mode="morning"):
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
         post(content, embeds)
+        if mode == "morning":
+            state["morning_sent"] = today
 
     elif mode == "check":
         alerts = []
