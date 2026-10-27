@@ -384,9 +384,9 @@ def main(mode="morning"):
                     if a["cap"] >= 6 and a["cap"] > v.get(f"wind:{pname}", 0):
                         if a["cap"] >= 8:
                             alerts.append(f"🌪️ 📍 {tag}: Gió giật dữ dội **Cấp {a['cap']}** ({a['wind']:.0f} km/h)! ⚠️ *Nguy hiểm: Chú ý cây cối gãy đổ, tôn bay khi lưu thông.*")
-                            severe = True
                         else:
                             alerts.append(f"💨 📍 {tag}: Gió mạnh bất thường đạt **Cấp {a['cap']}** ({a['wind']:.0f} km/h). Lưu thông trên đường cần vững tay lái.")
+                        severe = True
                     
                     v[f"rain:{pname}"] = a["rain"][0] if a["rain"] else "none"
                     v[f"heat:{pname}"] = a["heat"]
