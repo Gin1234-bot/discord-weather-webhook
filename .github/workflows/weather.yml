@@ -2,8 +2,7 @@ name: weather
 
 on:
   schedule:
-    - cron: "02 0 * * *"
-    - cron: "15,45 * * * *"
+    - cron: "2,17,32,47 * * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -38,9 +37,7 @@ jobs:
 
       - name: Determine mode
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "02 0 * * *" ]; then
-            echo "MODE=morning" >> $GITHUB_ENV
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "MODE=${{ inputs.mode }}" >> $GITHUB_ENV
           else
             echo "MODE=check" >> $GITHUB_ENV
