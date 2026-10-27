@@ -360,13 +360,17 @@ def main(mode="morning"):
                 for pname, a in pdict.items():
                     tag = f"**{pname}**"
 
-                    # 1. Cảnh báo MƯA & DÔNG SÉT
+                    # 1. Cảnh báo MƯA & DÔNG SÉT (Chuyển từ Nắng/Khô sang Mưa)
                     if a["rain"] and v.get(f"rain:{pname}", "none") == "none":
                         if a["code"] >= 95:
-                            alerts.append(f"⛈️ 📍 {tag}: Dự báo có **dông sét nguy hiểm** ({a['rain'][0]}h–{a['rain'][1]}h). ⚠️ *Nên hạn chế ra đường hoặc tìm chỗ trú an toàn.*")
+                            alerts.append(f"⛈️ 📍 {tag}: Dự báo chuyển sang **dông sét nguy hiểm** ({a['rain'][0]}h–{a['rain'][1]}h). ⚠️ *Nên hạn chế ra đường hoặc tìm chỗ trú an toàn.*")
                             severe = True
                         else:
                             alerts.append(f"🌧️ 📍 {tag}: Dự báo xuất hiện mưa từ **{a['rain'][0]}h – {a['rain'][1]}h**. 🛵 *Nhớ mang theo áo mưa/ô trước khi ra đường!*")
+
+                    # 1b. Thông báo TẠNH MƯA (Chuyển từ Mưa sang Tạnh ráo / Khô ráo)
+                    elif not a["rain"] and v.get(f"rain:{pname}", "none") != "none":
+                        alerts.append(f"🌤️ 📍 {tag}: Dự báo mưa đã dứt, thời tiết chuyển sang **tạnh ráo / khô ráo** (`{a['tmin']:.0f}–{a['tmax']:.0f}°C`). 🛵 *Đường sá bắt đầu khô ráo, thuận tiện lưu thông.*")
 
                     # 2. Cảnh báo NẮNG GẮT GIA TĂNG
                     if a["heat"] > v.get(f"heat:{pname}", 0):
